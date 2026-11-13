@@ -49,7 +49,7 @@ def health():
 @app.post("/webhook")
 def webhook(signal: Signal):
     secret = os.environ.get("TM_WEBHOOK_SECRET", "")
-    if len(secret) < 16 or not compare_digest(secret, signal.secret):
+    if len(secret) < 16 or secret.startswith("REPLACE_") or not compare_digest(secret, signal.secret):
         raise HTTPException(401, "Invalid webhook secret")
     symbol = signal.symbol.upper()
     if symbol not in {"BTCUSDT", "ETHUSDT", "SOLUSDT"}:
@@ -100,7 +100,7 @@ def webhook(signal: Signal):
 @app.get("/portfolio")
 def portfolio(x_api_key: str | None = Header(default=None)):
     key = os.environ.get("TM_API_KEY", "")
-    if len(key) < 16 or x_api_key is None or not compare_digest(key, x_api_key):
+    if len(key) < 16 or key.startswith("REPLACE_") or x_api_key is None or not compare_digest(key, x_api_key):
         raise HTTPException(401, "Invalid API key")
     with connect() as db:
         return {"mode": "PAPER_ONLY", "cash_usd": db.execute("SELECT cash FROM account").fetchone()[0],
