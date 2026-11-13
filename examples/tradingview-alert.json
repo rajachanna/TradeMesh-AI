@@ -1,0 +1,8 @@
+{
+  "secret": "REPLACE_WITH_YOUR_WEBHOOK_SECRET",
+  "id": "unique-signal-001",
+  "symbol": "BTCUSDT",
+  "side": "buy",
+  "quantity": 0.01,
+  "price": 65000
+}
