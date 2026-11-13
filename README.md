@@ -6,7 +6,7 @@
 ![Execution](https://img.shields.io/badge/execution-PAPER%20ONLY-green)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-**Current working release (v0.1):** a lightweight Python/FastAPI TradingView-style webhook receiver, basic risk checks, SQLite-backed simulated portfolio and automated API tests. This release **does not connect to brokers or exchanges or place live trades**. It is an educational paper-only prototype.
+**Current working release (v0.1):** a lightweight Python/FastAPI TradingView-style webhook receiver, basic risk checks, SQLite-backed simulated portfolio, read-only web dashboard and automated API tests. This release **does not connect to brokers or exchanges or place live trades**. It is an educational paper-only prototype.
 
 ## What works
 
@@ -14,7 +14,7 @@
 - Simulated **long-only spot** orders for `BTCUSDT`, `ETHUSDT`, `SOLUSDT`
 - Duplicate signal ID prevention, atomic SQLite writes and persistent portfolio
 - Basic cash, maximum order notional ($2,000) and symbol exposure ($3,000) limits
-- Protected portfolio endpoint with an API key
+- Protected portfolio endpoint with an API key and responsive local read-only dashboard
 - Example payload, Docker Compose, test suite and implementation roadmap
 
 ## Local setup (Python 3.11+)
@@ -39,7 +39,7 @@ uvicorn trademesh.api:app --app-dir src --host 127.0.0.1 --port 8000
 
 On Windows, set `TM_API_KEY` and `TM_WEBHOOK_SECRET` as environment variables through PowerShell before running uvicorn.
 
-API documentation: **http://127.0.0.1:8000/docs** · Health: **http://127.0.0.1:8000/health**
+Dashboard: **http://127.0.0.1:8000/** · API documentation: **http://127.0.0.1:8000/docs** · Health: **http://127.0.0.1:8000/health**
 
 ### Docker
 
@@ -90,7 +90,7 @@ For Windows PowerShell, run `$env:PYTHONPATH="src"; pytest -q`.
 - MetaTrader 5 demo account adapter
 - Crypto CEX testnet/sandbox connectors and DEX simulation
 - TradingView signal freshness, signature support, rate limits
-- Portfolio dashboard, strategy backtesting, risk analytics, AI explanations
+- Expanded dashboard, strategy backtesting, risk analytics, AI explanations
 - Proper production-grade risk controls and broker reconciliation
 
 See [ROADMAP.md](ROADMAP.md) and [SECURITY.md](SECURITY.md) for details and limitations.
