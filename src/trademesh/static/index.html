@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>TradeMesh AI | Paper Trading Dashboard</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#e8f0fb;background:#09111d}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 95% 0,#152d48 0,transparent 35%),#09111d}
+main{max-width:1130px;margin:auto;padding:35px 22px 65px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:13px;font-size:24px;font-weight:800;letter-spacing:-.6px}
+.mark{width:40px;height:40px;display:grid;place-items:center;background:linear-gradient(130deg,#45eba7,#2d6cea);color:#031a19;border-radius:12px;font-size:23px}
+.status{border:1px solid #34765d;color:#77f0b6;font-size:12px;border-radius:20px;padding:9px 13px;font-weight:750;letter-spacing:.07em}
+h1{font-size:clamp(30px,5vw,46px);letter-spacing:-1.2px;margin:47px 0 9px}p{color:#9eaec3;line-height:1.6}
+.connect{display:flex;gap:10px;margin:24px 0 6px;flex-wrap:wrap}
+input{background:#111e31;border:1px solid #334967;border-radius:10px;color:#e8f0fb;font-size:14px;padding:14px 15px;min-width:260px;flex:1}
+button{background:#47dfa4;color:#07221c;padding:13px 20px;font-weight:800;border:0;border-radius:10px;cursor:pointer}
+button:hover{background:#78f3c0}button.secondary{background:#1e3553;color:#deeefa}
+#error{color:#ffaaa9;min-height:26px;font-size:13px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:20px}
+.stat,.panel{background:#101d30;border:1px solid #283b53;border-radius:16px;padding:22px}
+.stat small{display:block;color:#92a9c3;font-size:13px}.stat strong{font-size:31px;display:block;margin-top:11px;letter-spacing:-.8px}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:17px}
+h2{font-size:18px;margin:0 0 18px}.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:#8fa7c5;font-size:12px;font-weight:600}
+th,td{padding:12px 8px;border-bottom:1px solid #263a53}td:first-child{font-weight:650}
+.muted{color:#8da4bf}footer{font-size:12px;margin-top:30px;color:#8fa7c3}
+a{color:#61e7b0;text-decoration:none}a:hover{text-decoration:underline}
+@media(max-width:800px){.panels{grid-template-columns:1fr}}
+@media(max-width:590px){.grid{grid-template-columns:1fr}main{padding:22px 13px 40px}.stat strong{font-size:25px}}
+</style>
+</head>
+<body><main>
+<header><div class="logo"><div class="mark">◇</div>TradeMesh <span style="color:#4de3ad">AI</span></div><div class="status">● PAPER ONLY · v0.1</div></header>
+<h1>Trading automation, built for control.</h1>
+<p>A local-only proof of concept. Simulated cash, spot positions and webhook orders. No live market data or broker execution.</p>
+<div class="connect">
+<input type="password" id="key" placeholder="Enter TM_API_KEY to view your portfolio" autocomplete="off">
+<button id="connect">Connect</button><button id="refresh" class="secondary">Refresh</button>
+</div><div id="error" role="status"></div>
+<div class="grid"><div class="stat"><small>Simulated cash balance</small><strong id="cash">—</strong></div>
+<div class="stat"><small>Open positions</small><strong id="open">—</strong></div>
+<div class="stat"><small>Recorded paper orders</small><strong id="count">—</strong></div></div>
+<div class="panels">
+<section class="panel"><h2>Current paper positions</h2><div class="scroll"><table>
+<thead><tr><th>Symbol</th><th>Quantity</th><th>Average cost</th></tr></thead><tbody id="positions"><tr><td colspan="3" class="muted">Connect to load positions.</td></tr></tbody>
+</table></div></section>
+<section class="panel"><h2>Recent simulated orders</h2><div class="scroll"><table>
+<thead><tr><th>Signal ID</th><th>Side</th><th>Symbol</th><th>Qty</th><th>Price</th></tr></thead><tbody id="orders"><tr><td colspan="5" class="muted">Connect to load orders.</td></tr></tbody>
+</table></div></section>
+</div>
+<footer>Demo warnings: webhook-supplied prices only; no price verification, fees, slippage or profit reporting. API docs: <a href="/docs">/docs</a> · <a href="https://github.com/rajachanna/TradeMesh-AI">GitHub source</a></footer>
+</main>
+<script>
+(function(){
+  const byId=(name)=>document.getElementById(name);
+  let token="";
+  function td(row,text){const item=document.createElement("td");item.textContent=String(text);row.appendChild(item);}
+  function empty(target,count,message){const row=document.createElement("tr");const item=document.createElement("td");item.colSpan=count;item.textContent=message;item.className="muted";row.appendChild(item);target.appendChild(row);}
+  async function load(){
+    byId("error").textContent="";
+    if(!token){byId("error").textContent="Enter your API key first.";return;}
+    try{
+      const response=await fetch("/portfolio",{headers:{"X-API-Key":token},cache:"no-store"});
+      if(!response.ok)throw Error(response.status===401?"Invalid API key.":"Unable to load portfolio ("+response.status+").");
+      const data=await response.json();
+      byId("cash").textContent=Number(data.cash_usd).toLocaleString("en-US",{style:"currency",currency:"USD"});
+      byId("open").textContent=data.positions.length;
+      byId("count").textContent=data.orders.length;
+      for(const [id,items,count] of [["positions",data.positions,3],["orders",data.orders,5]]){
+        const target=byId(id);target.replaceChildren();
+        if(items.length===0)empty(target,count,"None yet. Use /docs to submit a paper alert.");
+        items.forEach(x=>{const row=document.createElement("tr");
+          if(id==="positions"){td(row,x.symbol);td(row,x.qty);td(row,Number(x.cost).toLocaleString("en-US",{maximumFractionDigits:2}));}
+          else{td(row,x.id);td(row,x.side.toUpperCase());td(row,x.symbol);td(row,x.quantity);td(row,x.price);}
+          target.appendChild(row);
+        });
+      }
+    }catch(err){byId("error").textContent=err.message;}
+  }
+  byId("connect").addEventListener("click",()=>{token=byId("key").value;byId("key").value="";load();});
+  byId("refresh").addEventListener("click",load);
+  byId("key").addEventListener("keydown",(event)=>{if(event.key==="Enter")byId("connect").click();});
+})();
+</script></body></html>
