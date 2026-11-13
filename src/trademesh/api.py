@@ -6,6 +6,7 @@ import os
 import sqlite3
 
 from fastapi import FastAPI, Header, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, field_validator
 
 app = FastAPI(title="TradeMesh AI — Paper-only prototype", version="0.1.0")
@@ -39,6 +40,11 @@ class Signal(BaseModel):
         if not v.is_finite() or v <= 0:
             raise ValueError("Must be positive and finite")
         return v
+
+
+@app.get("/")
+def dashboard():
+    return FileResponse(Path(__file__).parent / "static" / "index.html")
 
 
 @app.get("/health")
