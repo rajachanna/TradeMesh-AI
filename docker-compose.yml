@@ -1,0 +1,13 @@
+services:
+  trademesh:
+    build: .
+    env_file: .env
+    environment:
+      TM_DB_PATH: /data/trademesh.db
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - paper-data:/data
+    restart: unless-stopped
+volumes:
+  paper-data:
